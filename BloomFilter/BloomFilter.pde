@@ -17,8 +17,8 @@ final int surfaceWidth = 250;
 final int surfaceHeight = 250;
 
 float luminanceFilter = 0.8;
-float blurSize = 3;
-float sigma = 3;
+float blurSize = 20;
+float sigma = 12;
 
 void setup()
 {
