@@ -11,11 +11,6 @@ varying vec4 vertTexCoord;
 uniform float brightPassThreshold;
 
 void main() {
-	/*
-	vec4 c = texture2D(texture, vertTexCoord.st) * vertColor;
-	gl_FragColor = vec4(c.xyz, 0.1);
-	*/
-	
 	vec3 luminanceVector = vec3(0.2125, 0.7154, 0.0721);
     vec4 c = texture2D(texture, vertTexCoord.st) * vertColor;
 
