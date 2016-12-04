@@ -18,7 +18,7 @@ To implement a bloom you should first understand how the effect is created:
 
 1. Draw you `original` image
 2. Create a `bright pass` image of the `original`
-3. Blur the `bright pass` image
+3. Blur the `bright pass` image (horizontal & vertical)
 4. Screen-blend it over the `original` image
 
 Sound's easy, right?
@@ -34,12 +34,14 @@ To store the results of our shaders I used `PGraphics` objects. The `canvas` is 
 
 ```java
 PGraphics canvas = createGraphics(surfaceWidth, surfaceHeight, P3D);
+
 PGraphics brightPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
+PGraphics horizontalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
+PGraphics verticalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D); 
 ```
 
-In every draw call you have first to render your content onto the `canvas`, then copy it onto the `brightpass` graphics and let the shader do the filter work. After the copy process you can **blur** the image with the filter function of processing.
+In every draw call you have first to render your content onto the `canvas`, then copy it onto the `brightpass` graphics and let the shader do the filter work.
 
-(**!!!** *This is very slow because it runs on the CPU. I am working on a shader based solution!* *!!!*)
 
 ```java
 // render content onto canvas
@@ -52,24 +54,39 @@ brightPass.beginDraw();
 brightPass.background(0, 0);
 brightPass.image(canvas, 0, 0);
 
-// blur the image
-brightPass.filter(BLUR, blurRadius);
 brightPass.endDraw();
 ```
+After the copy process you can **blur** the image with the filter shader. First horizontal and then vertical. 
 
-Now you just have to draw the original `canvas` first and then the `brightPass` texture graphics onto it. You have to change the `blendMode` to `SCREEN`. Otherwise the image will be black except for your blurred bright spots.
+```java
+// blur horizontal pass
+horizontalBlurPass.beginDraw();
+blurFilter.set("horizontalPass", 1);
+horizontalBlurPass.shader(blurFilter);
+horizontalBlurPass.image(brightPass, 0, 0);
+horizontalBlurPass.endDraw();
+
+// blur vertical pass
+verticalBlurPass.beginDraw();
+blurFilter.set("horizontalPass", 0);
+verticalBlurPass.shader(blurFilter);
+verticalBlurPass.image(horizontalBlurPass, 0, 0);
+verticalBlurPass.endDraw();
+```
+
+Now you just have to draw the original `canvas` first and then the `verticalBlurPass` texture graphics onto it. You have to change the `blendMode` to `SCREEN`. Otherwise the image will be black except for your blurred bright spots.
 
 ```java
 blendMode(BLEND);
 image(canvas, 0, 0);
 
 blendMode(SCREEN);
-image(brightPass, 0, 0);
+image(verticalBlurPass, 0, 0);
 ```
 
-In my example sketch you see the process visualised in three steps:
+In my example sketch you see the process visualised in four steps:
 
-![Example](readme/example2.jpg)
+![Example](readme/screenshot-201612340_0012.png)
 
 #### Shader
 To make the filtering faster you have to use GLSL Shaders. Because you are working with `PTexture` it is important to use **texture shaders** and not normal color shaders.
@@ -123,6 +140,62 @@ void main() {
 ```
 
 *Bloom Fragment Shader*
+
+The blur shader is very configurable. You can change the sigma and the blur size.
+
+```glsl
+uniform sampler2D texture;
+ 
+// The inverse of the texture dimensions along X and Y
+uniform vec2 texOffset;
+ 
+varying vec4 vertColor;
+varying vec4 vertTexCoord;
+ 
+uniform int blurSize;       
+uniform int horizontalPass; // 0 or 1 to indicate vertical or horizontal pass
+uniform float sigma;        // The sigma value for the gaussian function: higher value means more blur
+                            // A good value for 9x9 is around 3 to 5
+                            // A good value for 7x7 is around 2.5 to 4
+                            // A good value for 5x5 is around 2 to 3.5
+                            // ... play around with this based on what you need <span class="Emoticon Emoticon1"><span>:)</span></span>
+ 
+const float pi = 3.14159265;
+ 
+void main() {  
+  float numBlurPixelsPerSide = float(blurSize / 2); 
+ 
+  vec2 blurMultiplyVec = 0 < horizontalPass ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+ 
+  // Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)
+  vec3 incrementalGaussian;
+  incrementalGaussian.x = 1.0 / (sqrt(2.0 * pi) * sigma);
+  incrementalGaussian.y = exp(-0.5 / (sigma * sigma));
+  incrementalGaussian.z = incrementalGaussian.y * incrementalGaussian.y;
+ 
+  vec4 avgValue = vec4(0.0, 0.0, 0.0, 0.0);
+  float coefficientSum = 0.0;
+ 
+  // Take the central sample first...
+  avgValue += texture2D(texture, vertTexCoord.st) * incrementalGaussian.x;
+  coefficientSum += incrementalGaussian.x;
+  incrementalGaussian.xy *= incrementalGaussian.yz;
+ 
+  // Go through the remaining 8 vertical samples (4 on each side of the center)
+  for (float i = 1.0; i <= numBlurPixelsPerSide; i++) { 
+    avgValue += texture2D(texture, vertTexCoord.st - i * texOffset * 
+                          blurMultiplyVec) * incrementalGaussian.x;         
+    avgValue += texture2D(texture, vertTexCoord.st + i * texOffset * 
+                          blurMultiplyVec) * incrementalGaussian.x;         
+    coefficientSum += 2.0 * incrementalGaussian.x;
+    incrementalGaussian.xy *= incrementalGaussian.yz;
+  }
+ 
+  gl_FragColor = avgValue / coefficientSum;
+}
+```
+
+*Blur Vertex Filter ([by clankill3r](https://forum.processing.org/two/discussion/comment/24078/#Comment_24078))*
 
 ## About
 Developed by Florian Bruggisser in 2016

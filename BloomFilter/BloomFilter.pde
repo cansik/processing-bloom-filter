@@ -3,7 +3,10 @@ import controlP5.*;
 ControlP5 cp5;
 
 PGraphics canvas;
+
 PGraphics brightPass;
+PGraphics horizontalBlurPass;
+PGraphics verticalBlurPass;
 
 PShader bloomFilter;
 PShader blurFilter;
@@ -13,39 +16,63 @@ int angle = 0;
 final int surfaceWidth = 250;
 final int surfaceHeight = 250;
 
-float luminenceFilter = 0.8;
-float blurRadius = 3;
+float luminanceFilter = 0.8;
+float blurSize = 3;
+float sigma = 3;
 
 void setup()
 {
-  size(750, 250, P3D);
+  size(1000, 250, P3D);
 
   addUI();
 
   canvas = createGraphics(surfaceWidth, surfaceHeight, P3D);
+  
   brightPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
+  brightPass.noSmooth(); 
+
+  horizontalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
+  horizontalBlurPass.noSmooth(); 
+
+  verticalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
+  verticalBlurPass.noSmooth(); 
 
   bloomFilter = loadShader("bloomFrag.glsl", "bloomVert.glsl");
-  blurFilter = loadShader("blur.glsl");
-
-  brightPass.shader(bloomFilter);
+  blurFilter = loadShader("blurFrag.glsl", "blurVert.glsl");
 }
 
 void draw()
 {
   background(0);
 
-  bloomFilter.set("brightPassThreshold", luminenceFilter);
+  bloomFilter.set("brightPassThreshold", luminanceFilter);
+
+  blurFilter.set("blurSize", (int)blurSize);
+  blurFilter.set("sigma", sigma); 
 
   canvas.beginDraw();
   render(canvas);
   canvas.endDraw();
 
+  // bright pass
   brightPass.beginDraw();
-  brightPass.background(0, 0);
+  brightPass.shader(bloomFilter);
   brightPass.image(canvas, 0, 0);
-  brightPass.filter(BLUR, blurRadius);
   brightPass.endDraw();
+
+  // blur horizontal pass
+  horizontalBlurPass.beginDraw();
+  blurFilter.set("horizontalPass", 1);
+  horizontalBlurPass.shader(blurFilter);
+  horizontalBlurPass.image(brightPass, 0, 0);
+  horizontalBlurPass.endDraw();
+
+  // blur vertical pass
+  verticalBlurPass.beginDraw();
+  blurFilter.set("horizontalPass", 0);
+  verticalBlurPass.shader(blurFilter);
+  verticalBlurPass.image(horizontalBlurPass, 0, 0);
+  verticalBlurPass.endDraw();
 
   // draw original
   image(canvas.copy(), 0, 0);
@@ -53,14 +80,17 @@ void draw()
 
   // draw bright pass
   image(brightPass, surfaceWidth, 0);
-  text("Bright Pass & Blur", surfaceWidth + 20, height - 20); 
+  text("Bright Pass", surfaceWidth + 20, height - 20); 
+
+  image(verticalBlurPass, (surfaceWidth * 2), 0);
+  text("Blur", (surfaceWidth * 2) + 20, height - 20); 
 
   // draw 
-  image(canvas, (surfaceWidth * 2), 0);
+  image(canvas, (surfaceWidth * 3), 0);
   blendMode(SCREEN);
-  image(brightPass, (surfaceWidth * 2), 0);
+  image(verticalBlurPass, (surfaceWidth * 3), 0);
   blendMode(BLEND);
-  text("Combined", (surfaceWidth * 2) + 20, height - 20); 
+  text("Combined", (surfaceWidth * 3) + 20, height - 20); 
 
   // fps
   fill(0, 255, 0);
@@ -97,13 +127,18 @@ void addUI()
 {
   cp5 = new ControlP5(this);
 
-  cp5.addSlider("luminenceFilter")
+  cp5.addSlider("luminanceFilter")
     .setPosition(200, 5)
     .setRange(0, 1)
     ;
 
-  cp5.addSlider("blurRadius")
+  cp5.addSlider("blurSize")
     .setPosition(400, 5)
-    .setRange(0, 10)
+    .setRange(0, 100)
+    ;
+
+  cp5.addSlider("sigma")
+    .setPosition(600, 5)
+    .setRange(1, 100)
     ;
 }
