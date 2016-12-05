@@ -9,6 +9,8 @@ So I tried to find a way between implementing it directly in OpenGL ([with proce
 
 Keep in mind that this is **not the fastest** impelmentation, but one that is working with `P3D` and I still try to improve it.
 
+![Bloom Example](readme/luminance_cube_loop.gif)
+
 ## Implementation
 
 ### Basic Idea
