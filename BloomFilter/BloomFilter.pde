@@ -29,7 +29,7 @@ void setup()
   canvas = createGraphics(surfaceWidth, surfaceHeight, P3D);
   
   brightPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
-  brightPass.noSmooth(); 
+  brightPass.noSmooth();
 
   horizontalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
   horizontalBlurPass.noSmooth(); 
@@ -37,8 +37,8 @@ void setup()
   verticalBlurPass = createGraphics(surfaceWidth, surfaceHeight, P2D);
   verticalBlurPass.noSmooth(); 
 
-  bloomFilter = loadShader("bloomFrag.glsl", "bloomVert.glsl");
-  blurFilter = loadShader("blurFrag.glsl", "blurVert.glsl");
+  bloomFilter = loadShader("bloomFrag.glsl");
+  blurFilter = loadShader("blurFrag.glsl");
 }
 
 void draw()

@@ -197,6 +197,26 @@ void main() {
 
 *Blur Vertex Filter ([by clankill3r](https://forum.processing.org/two/discussion/comment/24078/#Comment_24078))*
 
+## Post FX Library
+For a better usage I have implemented a post fx library which currently contains following effects:
+
+* bright pass
+* blur horizontal
+* blur vertical
+
+You can use it on every `PGraphics` (except `g`) object like this:
+
+```java
+PostFX fx = new PostFX(width, height);
+
+// bloom filter
+PGraphics result = fx.filter(canvas)
+    .brightPass(0.5)
+    .blur(20, 50, false)
+    .blur(20, 50, true)
+    .close();
+```
+
 ## About
 Developed by Florian Bruggisser in 2016
 with 
