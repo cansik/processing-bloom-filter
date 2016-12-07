@@ -34,9 +34,9 @@ void draw()
 
   // filter current scene with bloom effect
   PGraphics result = fx.filter(canvas)
-    .brightPass(0.5)
-    .blur(20, 50, false)
-    .blur(20, 50, true)
+    .brightPass(0.3)
+    .blur(40, 12, false)
+    .blur(40, 12, true)
     .close();
 
   blendMode(BLEND);
