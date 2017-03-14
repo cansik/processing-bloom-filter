@@ -3,16 +3,19 @@ import java.nio.file.Paths;
 
 public class PostFX
 {
-  private final int PASS_NUMBER = 2;
+  private final int PASS_NUMBER = 5;
   private final Path SHADER_PATH = Paths.get(sketchPath(), "shader");
 
   private int width;
   private int height;
+  private int[] resolution;
+
   private int passIndex = -1;
 
   // shaders
   private PShader brightPassShader;
   private PShader blurShader;
+  private PShader sobelShader;
 
   // frameBuffer
   private PGraphics[] passBuffers;
@@ -21,6 +24,8 @@ public class PostFX
   {
     this.width = width;
     this.height = height;
+
+    resolution = new int[] {width, height};
 
     // init temp pass buffer
     passBuffers = new PGraphics[PASS_NUMBER];
@@ -38,6 +43,7 @@ public class PostFX
   {
     brightPassShader = loadShader(Paths.get(SHADER_PATH.toString(), "brightPassFrag.glsl").toString());
     blurShader = loadShader(Paths.get(SHADER_PATH.toString(), "blurFrag.glsl").toString());
+    sobelShader = loadShader(Paths.get(SHADER_PATH.toString(), "sobelFrag.glsl").toString());
   }
 
   private void increasePass()
@@ -80,7 +86,18 @@ public class PostFX
 
   public PGraphics close()
   {
-    return  getCurrentPass();
+    return getCurrentPass();
+  }
+
+  public PGraphics close(PGraphics result)
+  {
+    clearPass(result);
+    
+    result.beginDraw();
+    image(getCurrentPass(), 0, 0);
+    result.endDraw();
+    
+    return getCurrentPass();
   }
 
   public PostFX brightPass(float luminanceTreshold)
@@ -111,6 +128,23 @@ public class PostFX
 
     pass.beginDraw();
     pass.shader(blurShader);
+    pass.image(getCurrentPass(), 0, 0);
+    pass.endDraw();
+
+    increasePass();
+
+    return this;
+  }
+
+  public PostFX sobel()
+  {
+    PGraphics pass = getNextPass();
+    clearPass(pass);
+
+    sobelShader.set("resolution", resolution);
+
+    pass.beginDraw();
+    pass.shader(sobelShader);
     pass.image(getCurrentPass(), 0, 0);
     pass.endDraw();
 
