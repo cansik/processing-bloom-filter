@@ -66,8 +66,8 @@ public class PostFX
   {
     // clear pass buffer
     pass.beginDraw();
-    pass.background(0, 0);
     pass.resetShader();
+    pass.background(0, 0);
     pass.endDraw();
   }
 
@@ -91,12 +91,12 @@ public class PostFX
 
   public PGraphics close(PGraphics result)
   {
-    clearPass(result);
-    
+    //clearPass(result);
+
     result.beginDraw();
     image(getCurrentPass(), 0, 0);
     result.endDraw();
-    
+
     return getCurrentPass();
   }
 

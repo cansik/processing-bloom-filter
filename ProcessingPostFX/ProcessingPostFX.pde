@@ -54,8 +54,6 @@ void draw()
   // filter image with sobel
   sobelImage = fx.filter(canvas)
     .sobel()
-    .blur(20, 12, false)
-    .blur(20, 12, true)
     .close();
 
   blendMode(BLEND);
