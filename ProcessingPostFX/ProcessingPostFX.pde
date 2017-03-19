@@ -45,16 +45,16 @@ void draw()
   canvas.endDraw();
 
   // filter current scene with bloom effect
-  bloomImage = fx.filter(canvas)
+  fx.filter(canvas)
     .brightPass(0.3)
     .blur(40, 12, false)
     .blur(40, 12, true)
-    .close();
+    .close(bloomImage);
 
   // filter image with sobel
-  sobelImage = fx.filter(canvas)
-    .sobel()
-    .close();
+  fx.filter(canvas)
+    .toon()
+    .close(sobelImage);
 
   blendMode(BLEND);
 

@@ -9,22 +9,23 @@ precision mediump int;
 #define PROCESSING_TEXTURE_SHADER
  
 uniform sampler2D texture;
-uniform vec2 resolution;
  
 varying vec4 vertColor;
 varying vec4 vertTexCoord;
 
-void main() {
+uniform vec2 resolution;
+
+void main(void) {
   float x = 1.0 / resolution.x;
   float y = 1.0 / resolution.y;
-  vec4 horizEdge = vec4(0.0);
+  vec4 horizEdge = vec4( 0.0 );
   horizEdge -= texture2D( texture, vec2( vertTexCoord.x - x, vertTexCoord.y - y ) ) * 1.0;
   horizEdge -= texture2D( texture, vec2( vertTexCoord.x - x, vertTexCoord.y     ) ) * 2.0;
   horizEdge -= texture2D( texture, vec2( vertTexCoord.x - x, vertTexCoord.y + y ) ) * 1.0;
   horizEdge += texture2D( texture, vec2( vertTexCoord.x + x, vertTexCoord.y - y ) ) * 1.0;
   horizEdge += texture2D( texture, vec2( vertTexCoord.x + x, vertTexCoord.y     ) ) * 2.0;
   horizEdge += texture2D( texture, vec2( vertTexCoord.x + x, vertTexCoord.y + y ) ) * 1.0;
-  vec4 vertEdge = vec4(0.0);
+  vec4 vertEdge = vec4( 0.0 );
   vertEdge -= texture2D( texture, vec2( vertTexCoord.x - x, vertTexCoord.y - y ) ) * 1.0;
   vertEdge -= texture2D( texture, vec2( vertTexCoord.x    , vertTexCoord.y - y ) ) * 2.0;
   vertEdge -= texture2D( texture, vec2( vertTexCoord.x + x, vertTexCoord.y - y ) ) * 1.0;

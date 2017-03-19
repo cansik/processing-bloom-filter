@@ -3,7 +3,7 @@ import java.nio.file.Paths;
 
 public class PostFX
 {
-  private final int PASS_NUMBER = 5;
+  private final int PASS_NUMBER = 2;
   private final Path SHADER_PATH = Paths.get(sketchPath(), "shader");
 
   private int width;
@@ -16,6 +16,7 @@ public class PostFX
   private PShader brightPassShader;
   private PShader blurShader;
   private PShader sobelShader;
+  private PShader toonShader;
 
   // frameBuffer
   private PGraphics[] passBuffers;
@@ -44,6 +45,7 @@ public class PostFX
     brightPassShader = loadShader(Paths.get(SHADER_PATH.toString(), "brightPassFrag.glsl").toString());
     blurShader = loadShader(Paths.get(SHADER_PATH.toString(), "blurFrag.glsl").toString());
     sobelShader = loadShader(Paths.get(SHADER_PATH.toString(), "sobelFrag.glsl").toString());
+    toonShader = loadShader(Paths.get(SHADER_PATH.toString(), "toonFrag.glsl").toString());
   }
 
   private void increasePass()
@@ -66,8 +68,8 @@ public class PostFX
   {
     // clear pass buffer
     pass.beginDraw();
-    pass.resetShader();
     pass.background(0, 0);
+    pass.resetShader();
     pass.endDraw();
   }
 
@@ -91,10 +93,10 @@ public class PostFX
 
   public PGraphics close(PGraphics result)
   {
-    //clearPass(result);
+    clearPass(result);
 
     result.beginDraw();
-    image(getCurrentPass(), 0, 0);
+    result.image(getCurrentPass(), 0, 0);
     result.endDraw();
 
     return getCurrentPass();
@@ -145,6 +147,23 @@ public class PostFX
 
     pass.beginDraw();
     pass.shader(sobelShader);
+    pass.image(getCurrentPass(), 0, 0);
+    pass.endDraw();
+
+    increasePass();
+
+    return this;
+  }
+
+  public PostFX toon()
+  {
+    PGraphics pass = getNextPass();
+    clearPass(pass);
+
+    toonShader.set("resolution", resolution);
+
+    pass.beginDraw();
+    pass.shader(toonShader);
     pass.image(getCurrentPass(), 0, 0);
     pass.endDraw();
 
