@@ -17,18 +17,23 @@ For a better usage I have implemented a post fx library which currently contains
 * bright pass
 * blur horizontal
 * blur vertical
+* sobel edge detection
+* toon filter
+
+Some of the shaders are from the [spite/Wagner](https://github.com/spite/Wagner/) respoitory and only adapted to work in processing.
 
 You can use it on every `PGraphics3D` (except `g`) object like this:
 
 ```java
+PGraphics bloom = createGraphics(width, height, P2D);
 PostFX fx = new PostFX(width, height);
 
 // bloom filter
-PGraphics bloom = fx.filter(canvas)
+fx.filter(canvas)
     .brightPass(0.5)
     .blur(20, 50, false)
     .blur(20, 50, true)
-    .close();
+    .close(bloom);
     
 // draw the bloom onto the original image
 blendMode(BLEND);
