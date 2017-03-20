@@ -11,7 +11,7 @@ Keep in mind that this is **not the fastest** impelmentation, but one that is wo
 
 ![Bloom Example](readme/luminance_cube_loop.gif)
 
-## Post FX Library
+## Post FX Library
 For a better usage I have implemented a post fx library which currently contains following effects:
 
 * bright pass
