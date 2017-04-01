@@ -1,4 +1,5 @@
 # Processing Bloom Filter
+
 An example of a bloom filter as post FX in [processing3](https://processing.org/).
 
 Post-processing filters are great tools to give a rendered (and realistic) scene more utterance. For example the bloom filter helps to simulate the light diffusion to be more **realistic**.
@@ -12,36 +13,9 @@ Keep in mind that this is **not the fastest** impelmentation, but one that is wo
 ![Bloom Example](readme/luminance_cube_loop.gif)
 
 ## Post FX Library
-For a better usage I have implemented a post fx library which currently contains following effects:
+For a better usage I have implemented a post fx library:
 
-* bright pass
-* blur horizontal
-* blur vertical
-* sobel edge detection
-* toon filter
-
-Some of the shaders are from the [spite/Wagner](https://github.com/spite/Wagner/) respoitory and only adapted to work in processing.
-
-You can use it on every `PGraphics3D` (except `g`) object like this:
-
-```java
-PGraphics bloom = createGraphics(width, height, P2D);
-PostFX fx = new PostFX(width, height);
-
-// bloom filter
-fx.filter(canvas)
-    .brightPass(0.5)
-    .blur(20, 50, false)
-    .blur(20, 50, true)
-    .close(bloom);
-    
-// draw the bloom onto the original image
-blendMode(BLEND);
-image(canvas, 0, 0);
-
-blendMode(SCREEN);
-image(bloom, 0, 0);
-```
+[Processing PostFX](https://github.com/cansik/processing-postfx/)
 
 ## Implementation
 
